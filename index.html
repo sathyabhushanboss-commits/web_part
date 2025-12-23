@@ -1,88 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Client Backlink Manager</title>
 
+<!-- Excel Export Library -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 :root {
-  --primary: #4f46e5;
-  --secondary: #22c55e;
+  --primary: #6366f1;
+  --success: #22c55e;
   --danger: #ef4444;
   --bg: #f1f5f9;
   --card: #ffffff;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
   background: linear-gradient(135deg, #eef2ff, #f8fafc);
-  min-height: 100vh;
-  padding: 15px;
+  padding: 16px;
 }
 
+/* CARD */
 .container {
   max-width: 1000px;
   margin: auto;
   background: var(--card);
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 20px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 25px 45px rgba(0,0,0,0.1);
   animation: slideUp 0.6s ease;
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 20px;
   color: var(--primary);
+  margin-bottom: 20px;
 }
 
 /* FORM */
 form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
   gap: 12px;
-  margin-bottom: 20px;
 }
 
 input, select {
   padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #cbd5f5;
   font-size: 15px;
+  border-radius: 12px;
+  border: 1px solid #c7d2fe;
   transition: 0.3s;
 }
 
 input:focus, select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(79,70,229,0.2);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
 }
 
 button {
   padding: 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
   font-size: 15px;
-  transition: 0.3s ease;
   color: #fff;
+  transition: 0.3s ease;
 }
 
 button:hover {
   transform: translateY(-2px);
 }
 
+.save-btn {
+  background: var(--primary);
+}
+
 /* TABLE */
 .table-wrapper {
   overflow-x: auto;
+  margin-top: 20px;
 }
 
 table {
@@ -111,45 +114,29 @@ tr:nth-child(even) {
 
 /* ACTION BUTTONS */
 .edit-btn {
-  background: var(--secondary);
+  background: var(--success);
 }
 
 .delete-btn {
   background: var(--danger);
 }
 
-.edit-btn:hover,
-.delete-btn:hover {
-  opacity: 0.9;
-}
-
-/* DOWNLOAD BUTTONS */
+/* DOWNLOAD */
 .downloads {
   display: flex;
-  flex-wrap: wrap;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 15px;
 }
 
-.csv-btn {
-  background: #0ea5e9;
-}
-
-.excel-btn {
-  background: #16a34a;
-}
+.csv-btn { background: #0ea5e9; }
+.excel-btn { background: #16a34a; }
 
 /* ANIMATIONS */
 @keyframes slideUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 @keyframes fadeIn {
@@ -157,15 +144,10 @@ tr:nth-child(even) {
   to { opacity: 1; }
 }
 
-/* MOBILE OPTIMIZATION */
+/* MOBILE */
 @media (max-width: 600px) {
-  th, td {
-    font-size: 14px;
-  }
-
-  h2 {
-    font-size: 20px;
-  }
+  h2 { font-size: 20px; }
+  th, td { font-size: 14px; }
 }
 </style>
 </head>
@@ -176,13 +158,13 @@ tr:nth-child(even) {
   <h2>🔗 Client Backlink Manager</h2>
 
   <form id="clientForm">
-    <input type="text" id="name" placeholder="Client Name" required>
-    <input type="url" id="url" placeholder="Website URL" required>
+    <input type="text" id="name" placeholder="Client Name" required />
+    <input type="url" id="url" placeholder="Website URL" required />
     <select id="type">
-      <option>Do Follow</option>
-      <option>No Follow</option>
+      <option value="Do Follow">Do Follow</option>
+      <option value="No Follow">No Follow</option>
     </select>
-    <button style="background:var(--primary)">Save</button>
+    <button class="save-btn" type="submit">Save</button>
   </form>
 
   <div class="table-wrapper">
@@ -229,16 +211,30 @@ function renderTable() {
   });
 }
 
-form.addEventListener("submit", e => {
+form.addEventListener("submit", function(e) {
   e.preventDefault();
+
+  const nameInput = document.getElementById("name");
+  const urlInput = document.getElementById("url");
+  const typeInput = document.getElementById("type");
+
   const data = {
-    name: name.value,
-    url: url.value,
-    type: type.value
+    name: nameInput.value.trim(),
+    url: urlInput.value.trim(),
+    type: typeInput.value
   };
 
-  editIndex === -1 ? clients.push(data) : clients[editIndex] = data;
-  editIndex = -1;
+  if (!data.name || !data.url) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  if (editIndex === -1) {
+    clients.push(data);
+  } else {
+    clients[editIndex] = data;
+    editIndex = -1;
+  }
 
   localStorage.setItem("clients", JSON.stringify(clients));
   form.reset();
@@ -246,9 +242,9 @@ form.addEventListener("submit", e => {
 });
 
 function editClient(i) {
-  name.value = clients[i].name;
-  url.value = clients[i].url;
-  type.value = clients[i].type;
+  document.getElementById("name").value = clients[i].name;
+  document.getElementById("url").value = clients[i].url;
+  document.getElementById("type").value = clients[i].type;
   editIndex = i;
 }
 
@@ -263,7 +259,7 @@ function deleteClient(i) {
 function downloadCSV() {
   let csv = "Client,Website,Backlink\n";
   clients.forEach(c => csv += `${c.name},${c.url},${c.type}\n`);
-  const blob = new Blob([csv], {type:"text/csv"});
+  const blob = new Blob([csv], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "clients.csv";
